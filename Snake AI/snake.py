@@ -62,7 +62,7 @@ class Snake:
         return False
     
     def get_status(self,fruit):
-        status = [0] * 12  # Initialiser status avec un élément, ici 0
+        status = [0] * 16  # Initialiser status avec un élément, ici 0
     
     # Check if the snake is going to hit itself
         status[0]= self.head +(0,1) in self.body
@@ -79,6 +79,12 @@ class Snake:
         status[9]= self.head[0] > fruit[0]
         status[10]= self.head[1] < fruit[1]
         status[11]= self.head[1] > fruit[1]
+
+    # check if the fruit is close to the snake
+        status[12]= (self.head +(0,1) == fruit)
+        status[13]= (self.head +(1,0) == fruit)
+        status[14]= (self.head +(0,-1) == fruit)
+        status[15]= (self.head +(-1,0) == fruit)
         return status
     
     def reset(self):
@@ -110,9 +116,14 @@ fruit = (random.randint(0, 16), random.randint(0, 14))
 
 screen.fill(GREEN)
 
-
-controller = AIController(10)
+population = 100
+controller = AIController(population)
 score = 0
+numGenome = 0
+limit = 300
+nbStep = 0
+nbGeneration = 0
+print("New Generation" + str(nbGeneration))
 while running:
     # Handle events
     for event in pygame.event.get():
@@ -120,14 +131,16 @@ while running:
             running = False
 
     # Get the direction from the controller
-    direction = controller.get_direction(mySnake.get_status(fruit),0)
+    direction = controller.get_direction(mySnake.get_status(fruit),numGenome)
     if direction:
         if (direction == "up" and mySnake.direction != "down") or (direction == "down" and mySnake.direction != "up") or (direction == "left" and mySnake.direction != "right") or (direction == "right" and mySnake.direction != "left"):
             mySnake.direction = direction
 
     # Update the game state
     mySnake.move()
-    if mySnake.check_wall() or mySnake.check_collision():
+    if mySnake.check_wall() or mySnake.check_collision() or nbStep > limit:
+        controller.setFitness(numGenome,score)
+        nbStep = 0
         font = pygame.font.Font(None, 74)  # 74 est la taille de la police
         message = f"Game Over. Score: {score}"
         overlay = pygame.Surface((850, 750))  # Créer une surface de la taille de l'écran
@@ -136,6 +149,12 @@ while running:
 
         # Afficher le rectangle grisé
         screen.blit(overlay, (0, 0))
+        numGenome += 1
+        numGenome = numGenome % population
+        if numGenome == 0:
+            nbGeneration += 1
+            print("New Generation" + str(nbGeneration))
+            controller.newGeneration(nbGeneration)
 
         # Rendre le message texte
         text = font.render(message, True, WHITE)
@@ -149,11 +168,12 @@ while running:
         mySnake.reset()
 
         pygame.display.flip()
-        wait = pygame.time.wait(1000)
+        wait = pygame.time.wait(0)
     
     if mySnake.check_fruit(fruit):
         mySnake.grow()
         score += 1
+        nbStep = 0
         while mySnake.check_object_collision(fruit):
             fruit = (random.randint(0, 16), random.randint(0, 14))
 
@@ -175,6 +195,7 @@ while running:
 
     pygame.draw.rect(screen, RED, (fruit[0]*50, fruit[1]*50, 50, 50))
 
-    wait = pygame.time.wait(100)
+    nbStep += 1
+    wait = pygame.time.wait(0)
     # Display the screen
     pygame.display.flip()
