@@ -20,53 +20,53 @@ class AIController(Controller):
     def get_direction(self,inputData,genomeIndex):
         output = ComputeForward(self.genomes[genomeIndex], inputData)
         print(output)
-        if  max(output, key=output.get) == 80:
-            return "UP"
-        elif max(output, key=output.get) == 81:
-            return "DOWN"
-        elif max(output, key=output.get) == 82:
-            return "LEFT"
-        elif max(output, key=output.get) == 83:
-            return "RIGHT"
-        elif max(output, key=output.get) == 84:
+        if max(output, key=output.get) == 76:
+            return "up"
+        elif max(output, key=output.get) == 77:
+            return "down"
+        elif max(output, key=output.get) == 78:
+            return "left"
+        elif max(output, key=output.get) == 79:
+            return "right"
+        elif max(output, key=output.get) == 80:
             return "NONE"
     
 def createGenome():
     genes = {}
-    for i in range(0, 16):
+    for i in range(0, 12):
         if i not in genes:
             genes[i] = []
-        for j in range(16, 48):
+        for j in range(12, 44):
             genes[i].append((j, random.uniform(-1, 1)))
-    for i in range(16, 48):
+    for i in range(12, 44):
         if i not in genes:
             genes[i] = []
-        for j in range(48, 80):
+        for j in range(44, 76):
             genes[i].append((j, random.uniform(-1, 1)))
-    for i in range(48, 80):
+    for i in range(44, 76):
         if i not in genes:
             genes[i] = []
-        for j in range(80, 85):
+        for j in range(76, 81):
             genes[i].append((j, random.uniform(-1, 1)))
     return Genome(genes)
 
 def ComputeForward(genome, inputs):
     outputs = {}
-    for i in range(0, 16):
+    for i in range(0, 12):
         outputs[i] = inputs[i]
-    for i in range(16, 85):
+    for i in range(12, 81):
         outputs[i] = 0
 
-    for i in range(0, 16):
-        for j in range(16, 48):
+    for i in range(0, 12):
+        for j in range(12, 44):
             outputs[j] += genome.genes[i][j-16][1] * inputs[i]
-    for i in range(16, 48):
-        for j in range(48, 80):
+    for i in range(12, 44):
+        for j in range(44, 76):
             outputs[j] += genome.genes[i][j-48][1] * outputs[i]
-    for i in range(48, 80):
-        for j in range(80, 85):
+    for i in range(44, 76):
+        for j in range(76, 81):
             outputs[j] += genome.genes[i][j-80][1] * outputs[i]
-    return {k: outputs[k] for k in range(80, 85)}
+    return {k: outputs[k] for k in range(76, 81)}
 
 # controller = AIController(4)
 # print(AIController.get_direction(controller, [1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1], 0))

@@ -61,6 +61,26 @@ class Snake:
             return True
         return False
     
+    def get_status(self,fruit):
+        status = [0] * 12  # Initialiser status avec un élément, ici 0
+    
+    # Check if the snake is going to hit itself
+        status[0]= self.head +(0,1) in self.body
+        status[1]= self.head +(1,0) in self.body
+        status[2]= self.head +(0,-1) in self.body
+        status[3]= self.head +(-1,0) in self.body
+    # Check if the snake is going to hit a wall
+        status[4]= self.head[0] == 0
+        status[5]= self.head[1] == 0
+        status[6]= self.head[0] == 16
+        status[7]= self.head[1] == 14
+    # Check if the fruit is on one direction
+        status[8]= self.head[0] < fruit[0]
+        status[9]= self.head[0] > fruit[0]
+        status[10]= self.head[1] < fruit[1]
+        status[11]= self.head[1] > fruit[1]
+        return status
+    
     def reset(self):
         self.direction = "right"
         self.body = [(4, 8), (3, 8), (2, 8)]
@@ -91,7 +111,7 @@ fruit = (random.randint(0, 16), random.randint(0, 14))
 screen.fill(GREEN)
 
 
-controller = AIController()
+controller = AIController(10)
 score = 0
 while running:
     # Handle events
@@ -100,7 +120,7 @@ while running:
             running = False
 
     # Get the direction from the controller
-    direction = controller.get_direction()
+    direction = controller.get_direction(mySnake.get_status(fruit),0)
     if direction:
         if (direction == "up" and mySnake.direction != "down") or (direction == "down" and mySnake.direction != "up") or (direction == "left" and mySnake.direction != "right") or (direction == "right" and mySnake.direction != "left"):
             mySnake.direction = direction
