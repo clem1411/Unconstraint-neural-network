@@ -14,10 +14,22 @@ class Genome():
 
 class AIController(Controller):
     genomes = []
-    def __init__(self,genomes):
-        self.genomes = genomes
-    def get_direction(self):
-        return random.choice(['left', 'right', 'up', 'down'])
+    def __init__(self,nbGenomes):
+        for i in range(0,nbGenomes):
+            self.genomes.append(createGenome())
+    def get_direction(self,inputData,genomeIndex):
+        output = ComputeForward(self.genomes[genomeIndex], inputData)
+        print(output)
+        if  max(output, key=output.get) == 80:
+            return "UP"
+        elif max(output, key=output.get) == 81:
+            return "DOWN"
+        elif max(output, key=output.get) == 82:
+            return "LEFT"
+        elif max(output, key=output.get) == 83:
+            return "RIGHT"
+        elif max(output, key=output.get) == 84:
+            return "NONE"
     
 def createGenome():
     genes = {}
@@ -34,14 +46,27 @@ def createGenome():
     for i in range(48, 80):
         if i not in genes:
             genes[i] = []
-        for j in range(80, 84):
+        for j in range(80, 85):
             genes[i].append((j, random.uniform(-1, 1)))
     return Genome(genes)
 
-controller = AIController([])
-genomes = []
-# Call create genome and print the result
-genomes.append(createGenome())
-controller = AIController(genomes)
-for gene_key, gene_value in controller.genomes[0].genes.items():
-    print(f"Gene {gene_key}: {gene_value}")
+def ComputeForward(genome, inputs):
+    outputs = {}
+    for i in range(0, 16):
+        outputs[i] = inputs[i]
+    for i in range(16, 85):
+        outputs[i] = 0
+
+    for i in range(0, 16):
+        for j in range(16, 48):
+            outputs[j] += genome.genes[i][j-16][1] * inputs[i]
+    for i in range(16, 48):
+        for j in range(48, 80):
+            outputs[j] += genome.genes[i][j-48][1] * outputs[i]
+    for i in range(48, 80):
+        for j in range(80, 85):
+            outputs[j] += genome.genes[i][j-80][1] * outputs[i]
+    return {k: outputs[k] for k in range(80, 85)}
+
+# controller = AIController(4)
+# print(AIController.get_direction(controller, [1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1], 0))
