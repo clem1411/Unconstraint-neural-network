@@ -113,7 +113,7 @@ def crossMute(genomes,numGeneration):
     genome1 = genomes[random.randint(0, 3)]
     genome2 = genomes[random.randint(0, 3)]
 
-    mute_rate = 0.2-math.log(numGeneration+1)/30
+    mute_rate = 0.2-math.log(numGeneration+1)/50
     newGenes= {}
     for i in range(0, 16):
         if i not in newGenes:
@@ -155,8 +155,9 @@ def crossMute(genomes,numGeneration):
 class AITrainedControler(Controller):
     genome = {}
     def __init__(self):
-        with open('genome.json', mode='r') as file:
-            self.genome = json.load(file)
+        with open('bestGenome.json', mode='r') as file:
+            genes = json.load(file)
+            self.genome = Genome({int(k): v for k, v in genes.items()})
     def get_direction(self,inputData):
         output = ComputeForward(self.genome, inputData)
         if max(output, key=output.get) == 80:

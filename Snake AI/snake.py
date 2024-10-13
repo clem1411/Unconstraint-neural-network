@@ -2,6 +2,7 @@ import pygame
 import random
 from GeneticAI import Controller
 from GeneticAI import AIController
+from GeneticAI import AITrainedControler
 
 # Initialize the game
 pygame.init()
@@ -117,13 +118,20 @@ fruit = (random.randint(0, 16), random.randint(0, 14))
 screen.fill(GREEN)
 
 population = 100
-controller = AIController(population)
+
+#controller = AIController(population)
+controller = AITrainedControler()
+
+training = False
+
 score = 0
 numGenome = 0
 limit = 300
 nbStep = 0
 nbGeneration = 0
-print("New Generation" + str(nbGeneration))
+if training:
+    print("New Generation" + str(nbGeneration))
+
 while running:
     # Handle events
     for event in pygame.event.get():
@@ -133,7 +141,11 @@ while running:
             running = False
 
     # Get the direction from the controller
-    direction = controller.get_direction(mySnake.get_status(fruit),numGenome)
+    if training:
+        direction = controller.get_direction(mySnake.get_status(fruit),numGenome)
+    else:    
+        direction = controller.get_direction(mySnake.get_status(fruit))
+
     if direction:
         if (direction == "up" and mySnake.direction != "down") or (direction == "down" and mySnake.direction != "up") or (direction == "left" and mySnake.direction != "right") or (direction == "right" and mySnake.direction != "left"):
             mySnake.direction = direction
@@ -141,7 +153,6 @@ while running:
     # Update the game state
     mySnake.move()
     if mySnake.check_wall() or mySnake.check_collision() or nbStep > limit:
-        controller.setFitness(numGenome,score)
         nbStep = 0
         font = pygame.font.Font(None, 74)  # 74 est la taille de la police
         message = f"Game Over. Score: {score}"
@@ -151,12 +162,14 @@ while running:
 
         # Afficher le rectangle grisé
         screen.blit(overlay, (0, 0))
-        numGenome += 1
-        numGenome = numGenome % population
-        if numGenome == 0:
-            nbGeneration += 1
-            print("New Generation" + str(nbGeneration))
-            controller.newGeneration(nbGeneration)
+        if(training):
+            controller.setFitness(numGenome,score)
+            numGenome += 1
+            numGenome = numGenome % population
+            if numGenome == 0:
+                nbGeneration += 1
+                print("New Generation" + str(nbGeneration))
+                controller.newGeneration(nbGeneration)
 
         # Rendre le message texte
         text = font.render(message, True, WHITE)
@@ -170,7 +183,8 @@ while running:
         mySnake.reset()
 
         pygame.display.flip()
-        wait = pygame.time.wait(0)
+        if not training:
+            wait = pygame.time.wait(1000)
     
     if mySnake.check_fruit(fruit):
         mySnake.grow()
@@ -198,6 +212,7 @@ while running:
     pygame.draw.rect(screen, RED, (fruit[0]*50, fruit[1]*50, 50, 50))
 
     nbStep += 1
-    wait = pygame.time.wait(0)
+    if not training:
+        wait = pygame.time.wait(100)
     # Display the screen
     pygame.display.flip()
