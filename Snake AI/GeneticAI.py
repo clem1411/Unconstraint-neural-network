@@ -63,6 +63,14 @@ class AIController(Controller):
         for i in range(7, 100):
             newGenomes.append(crossMute(self.genomes[:4],numGeneration))
         self.genomes = newGenomes
+
+    def saveBestGenome(self):
+        with open('bestGenome.json', mode='w') as file:
+            json.dump({k: v for k, v in self.Best3Genome[0].genes.items()}, file)
+        
+    def saveTrainingState(self):        #TODO
+        with open('training_state.json', mode='w') as file:
+            json.dump(self.genomes, file)
     
 def createGenome():
     genes = {}
@@ -142,13 +150,7 @@ def crossMute(genomes,numGeneration):
                 newGenes[i].append((j+80, random.uniform(-1, 1)))
     return Genome(newGenes)
 
-def saveBestGenome(self):
-    with open('genome.json', mode='w') as file:
-        json.dump(self.Best3Genome[0], file)
-    
-def saveTrainingState(self):
-    with open('training_state.json', mode='w') as file:
-        json.dump(self.genomes, file)
+
 
 class AITrainedControler(Controller):
     genome = {}

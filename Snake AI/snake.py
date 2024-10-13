@@ -128,6 +128,8 @@ while running:
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            controller.saveBestGenome()
+            #controller.saveTrainingState()
             running = False
 
     # Get the direction from the controller
