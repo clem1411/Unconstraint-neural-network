@@ -4,6 +4,9 @@ from GeneticAI import Controller
 from GeneticAI import AIController
 from GeneticAI import AITrainedControler
 
+
+mode_input = input("Choose the mode (1: Human, 2: AI Training, 3: AI Trained): ").strip()
+
 # Initialize the game
 pygame.init()
 
@@ -119,10 +122,22 @@ screen.fill(GREEN)
 
 population = 100
 
-#controller = AIController(population)
-controller = AITrainedControler()
-
-training = False
+if mode_input == '1':
+    controller = HumanController()
+    training = False
+    human = True
+elif mode_input == '2':
+    controller = AIController(population)
+    training = True
+    human = False
+elif mode_input == '3':
+    controller = AITrainedControler()
+    training = False
+    human = False
+else:
+    print("Invalid input. Defaulting to Human mode.")
+    controller = HumanController()
+    training = False
 
 score = 0
 numGenome = 0
@@ -136,15 +151,19 @@ while running:
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            controller.saveBestGenome()
-            #controller.saveTrainingState()
+            if training:
+                controller.saveBestGenome()
+                #controller.saveTrainingState()
             running = False
 
     # Get the direction from the controller
     if training:
         direction = controller.get_direction(mySnake.get_status(fruit),numGenome)
     else:    
-        direction = controller.get_direction(mySnake.get_status(fruit))
+        if human:
+            direction = controller.get_direction()
+        else:
+            direction = controller.get_direction(mySnake.get_status(fruit))
 
     if direction:
         if (direction == "up" and mySnake.direction != "down") or (direction == "down" and mySnake.direction != "up") or (direction == "left" and mySnake.direction != "right") or (direction == "right" and mySnake.direction != "left"):
