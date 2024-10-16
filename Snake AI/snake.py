@@ -121,6 +121,7 @@ fruit = (random.randint(0, 16), random.randint(0, 14))
 screen.fill(GREEN)
 
 population = 100
+display = True
 
 if mode_input == '1':
     controller = HumanController()
@@ -128,6 +129,9 @@ if mode_input == '1':
     human = True
 elif mode_input == '2':
     controller = AIController(population)
+    display_input = input("Display the training ? (y/n)").strip()
+    if display_input == 'n':
+        display = False
     training = True
     human = False
 elif mode_input == '3':
@@ -143,6 +147,7 @@ score = 0
 numGenome = 0
 limit = 300
 nbStep = 0
+nbStepTotal = 0
 nbGeneration = 0
 if training:
     print("New Generation" + str(nbGeneration))
@@ -173,16 +178,27 @@ while running:
     mySnake.move()
     if mySnake.check_wall() or mySnake.check_collision() or nbStep > limit:
         nbStep = 0
-        font = pygame.font.Font(None, 74)  # 74 est la taille de la police
-        message = f"Game Over. Score: {score}"
-        overlay = pygame.Surface((850, 750))  # Créer une surface de la taille de l'écran
-        overlay.set_alpha(150)  # Définir la transparence (0 = transparent, 255 = opaque)
-        overlay.fill(GRAY)  # Colorier la surface avec du gris
+        if(display):
+            font = pygame.font.Font(None, 74)  # 74 est la taille de la police
+            message = f"Game Over. Score: {score}"
+            overlay = pygame.Surface((850, 750))  # Créer une surface de la taille de l'écran
+            overlay.set_alpha(150)  # Définir la transparence (0 = transparent, 255 = opaque)
+            overlay.fill(GRAY)  # Colorier la surface avec du gris
 
         # Afficher le rectangle grisé
-        screen.blit(overlay, (0, 0))
+            screen.blit(overlay, (0, 0))
+            # Rendre le message texte
+            text = font.render(message, True, WHITE)
+
+            # Obtenir la position du texte (centré)
+            text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+
+            # Afficher le texte sur l'écran
+            screen.blit(text, text_rect)
+
         if(training):
-            controller.setFitness(numGenome,score)
+            controller.setFitness(numGenome,50*score -nbStepTotal)
+            nbStepTotal = 0
             numGenome += 1
             numGenome = numGenome % population
             if numGenome == 0:
@@ -190,18 +206,10 @@ while running:
                 print("New Generation" + str(nbGeneration))
                 controller.newGeneration(nbGeneration)
 
-        # Rendre le message texte
-        text = font.render(message, True, WHITE)
-
-        # Obtenir la position du texte (centré)
-        text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-
-        # Afficher le texte sur l'écran
-        screen.blit(text, text_rect)
         score = 0
         mySnake.reset()
-
-        pygame.display.flip()
+        if(display):
+            pygame.display.flip()
         if not training:
             wait = pygame.time.wait(1000)
     
@@ -215,23 +223,26 @@ while running:
     # Draw everything
 
     # Draw the grid
-    x=0
-    y=0
-    for x in range(0, 850, 50):
-        for y in range(0, 750, 50):
-            if x%100 != y%100:
-                pygame.draw.rect(screen, GREEN, (x, y, 50, 50))
-            else:
-                pygame.draw.rect(screen, LIGHT_GREEN, (x, y, 50, 50))
+    if(display):
+        x=0
+        y=0
+        for x in range(0, 850, 50):
+            for y in range(0, 750, 50):
+                if x%100 != y%100:
+                    pygame.draw.rect(screen, GREEN, (x, y, 50, 50))
+                else:
+                    pygame.draw.rect(screen, LIGHT_GREEN, (x, y, 50, 50))
 
-    # Draw the snake
-    for segment in mySnake.body:
-        pygame.draw.rect(screen, WHITE, (segment[0]*50, segment[1]*50, 50, 50))
+        # Draw the snake
+        for segment in mySnake.body:
+            pygame.draw.rect(screen, WHITE, (segment[0]*50, segment[1]*50, 50, 50))
 
-    pygame.draw.rect(screen, RED, (fruit[0]*50, fruit[1]*50, 50, 50))
+        pygame.draw.rect(screen, RED, (fruit[0]*50, fruit[1]*50, 50, 50))
 
     nbStep += 1
+    nbStepTotal += 1
     if not training:
         wait = pygame.time.wait(100)
     # Display the screen
-    pygame.display.flip()
+    if(display):
+        pygame.display.flip()

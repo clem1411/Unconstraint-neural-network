@@ -65,9 +65,21 @@ class AIController(Controller):
         self.genomes = newGenomes
 
     def saveBestGenome(self):
-        with open('bestGenome.json', mode='w') as file:
-            json.dump({k: v for k, v in self.Best3Genome[0].genes.items()}, file)
-        
+        try:
+            with open('bestGenome.json', mode='r') as file:
+                data = json.load(file)
+                best_fitness = data.get('fitness', 0)
+        except (FileNotFoundError, json.JSONDecodeError):
+            best_fitness = 0
+
+        print(best_fitness)
+        if self.Best3Genome[0].fitness > best_fitness:
+            with open('bestGenome.json', mode='w') as file:
+                data = {
+                    'genes': {k: v for k, v in self.Best3Genome[0].genes.items()},
+                    'fitness': self.Best3Genome[0].fitness
+                }
+                json.dump(data, file)
     def saveTrainingState(self):        #TODO
         with open('training_state.json', mode='w') as file:
             json.dump(self.genomes, file)
@@ -156,8 +168,8 @@ class AITrainedControler(Controller):
     genome = {}
     def __init__(self):
         with open('bestGenome.json', mode='r') as file:
-            genes = json.load(file)
-            self.genome = Genome({int(k): v for k, v in genes.items()})
+            data = json.load(file)
+            self.genome = Genome({int(k): v for k, v in data['genes'].items()})
     def get_direction(self,inputData):
         output = ComputeForward(self.genome, inputData)
         if max(output, key=output.get) == 80:
