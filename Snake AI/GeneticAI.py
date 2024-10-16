@@ -9,18 +9,27 @@ class Controller:
         """Cette méthode doit être implémentée par les sous-classes pour retourner la direction."""
         raise NotImplementedError("Must be implemented in subclasses")
 
-class Genome():
-    genes = {}
-    fitness = 0
-    def __init__(self,genes):
+class Genome:
+    def __init__(self, genes):
         self.genes = genes
+        self.fitness = 0
+
+    def copy(self):
+        # Crée un nouvel objet Genome avec une copie profonde des gènes
+        new_genes = {k: v[:] for k, v in self.genes.items()}  # Copie des gènes
+        new_genome = Genome(new_genes)
+        new_genome.fitness = self.fitness  # Copie la valeur du fitness
+        return new_genome
 
 class AIController(Controller):
-    genomes = []
-    Best3Genome = []
     def __init__(self,nbGenomes):
+        self.genomes = []
+        self.Best3Genome = []
         for i in range(0,nbGenomes):
             self.genomes.append(createGenome())
+        with open('fitness_data.csv', mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["best_fitness", "average_fitness"])
     def get_direction(self,inputData,genomeIndex):
         output = ComputeForward(self.genomes[genomeIndex], inputData)
         #print(output)
@@ -42,15 +51,18 @@ class AIController(Controller):
         best_fitness = self.genomes[0].fitness
         average_fitness = sum([x.fitness for x in self.genomes]) / len(self.genomes)
         if(len(self.Best3Genome) < 3):
-            self.Best3Genome.append(self.genomes[0])
-            self.Best3Genome.append(self.genomes[1])
-            self.Best3Genome.append(self.genomes[2])
+            self.Best3Genome.append(self.genomes[0].copy())
+            self.Best3Genome.append(self.genomes[1].copy())
+            self.Best3Genome.append(self.genomes[2].copy())
         elif(self.Best3Genome[0].fitness < best_fitness):
-            self.Best3Genome[0] = self.genomes[0]
+            print("New best genome found fitness : " + str(best_fitness))
+            self.Best3Genome[0] = self.genomes[0].copy()  # Remplace la valeur si elle existe
         elif(self.Best3Genome[1].fitness < best_fitness):
-            self.Best3Genome[1] = self.genomes[0]
+            self.Best3Genome[1] = self.genomes[0].copy()
         elif(self.Best3Genome[2].fitness < best_fitness):
-            self.Best3Genome[2] = self.genomes[0]
+            self.Best3Genome[2] = self.genomes[0].copy()
+
+
 
         with open('fitness_data.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -59,10 +71,11 @@ class AIController(Controller):
         for i in range(0, 4):
             newGenomes.append(self.genomes[i])
         for i in range(4, 7):
-            newGenomes.append(self.Best3Genome[6-i])
+            newGenomes.append(self.Best3Genome[6-i].copy())
         for i in range(7, 100):
-            newGenomes.append(crossMute(self.genomes[:4],numGeneration))
+            newGenomes.append(crossMute(self.genomes[:7],numGeneration))
         self.genomes = newGenomes
+
 
     def saveBestGenome(self):
         try:
@@ -72,7 +85,6 @@ class AIController(Controller):
         except (FileNotFoundError, json.JSONDecodeError):
             best_fitness = 0
 
-        print(best_fitness)
         if self.Best3Genome[0].fitness > best_fitness:
             with open('bestGenome.json', mode='w') as file:
                 data = {
@@ -122,10 +134,10 @@ def ComputeForward(genome, inputs):
     return {k: outputs[k] for k in range(80, 85)}
 
 def crossMute(genomes,numGeneration):
-    genome1 = genomes[random.randint(0, 3)]
-    genome2 = genomes[random.randint(0, 3)]
+    genome1 = genomes[random.randint(0, 6)]
+    genome2 = genomes[random.randint(0, 6)]
 
-    mute_rate = 0.2-math.log(numGeneration+1)/50
+    mute_rate = 0.2-math.log(3*numGeneration+1)/50
     newGenes= {}
     for i in range(0, 16):
         if i not in newGenes:
@@ -145,7 +157,7 @@ def crossMute(genomes,numGeneration):
             choice = random.uniform(0, 1)
             if choice <= 0.45:
                 newGenes[i].append(genome1.genes[i][j])
-            elif choice <= 0.9:
+            elif choice <= 1.0-mute_rate:
                 newGenes[i].append(genome2.genes[i][j])
             else:
                 newGenes[i].append((j+44, random.uniform(-1, 1)))
@@ -156,7 +168,7 @@ def crossMute(genomes,numGeneration):
             choice = random.uniform(0, 1)
             if choice <= 0.45:
                 newGenes[i].append(genome1.genes[i][j])
-            elif choice <= 0.9:
+            elif choice <= 1.0-mute_rate:
                 newGenes[i].append(genome2.genes[i][j])
             else:
                 newGenes[i].append((j+80, random.uniform(-1, 1)))

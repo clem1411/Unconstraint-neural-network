@@ -94,6 +94,7 @@ class Snake:
     def reset(self):
         self.direction = "right"
         self.body = [(4, 8), (3, 8), (2, 8)]
+        # self.body = [(4, 8), (3, 8), (2, 8), (1, 8), (0, 8), (0, 7), (0, 6), (0, 5), (0, 4), (0, 3), (0, 2), (0, 1), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (16, 1), (16, 2), (16, 3), (16, 4), (16, 5), (16, 6), (16, 7), (16, 8), (16, 9), (16, 10), (16, 11), (16, 12), (16, 13), (16, 14)]
         self.head = (4, 8)
 
 
@@ -116,8 +117,10 @@ class HumanController(Controller):
 
     
 mySnake = Snake()
-fruit = (random.randint(0, 16), random.randint(0, 14))
 
+fruit = (random.randint(0, 16), random.randint(0, 14))
+while mySnake.check_object_collision(fruit):
+    fruit = (random.randint(0, 16), random.randint(0, 14))
 screen.fill(GREEN)
 
 population = 100
@@ -197,7 +200,7 @@ while running:
             screen.blit(text, text_rect)
 
         if(training):
-            controller.setFitness(numGenome,50*score -nbStepTotal)
+            controller.setFitness(numGenome,50*score*((score//30)+1)-nbStepTotal)
             nbStepTotal = 0
             numGenome += 1
             numGenome = numGenome % population
@@ -208,6 +211,9 @@ while running:
 
         score = 0
         mySnake.reset()
+        while mySnake.check_object_collision(fruit):
+            fruit = (random.randint(0, 16), random.randint(0, 14))
+
         if(display):
             pygame.display.flip()
         if not training:
@@ -242,7 +248,10 @@ while running:
     nbStep += 1
     nbStepTotal += 1
     if not training:
-        wait = pygame.time.wait(100)
+        if(human):
+            wait = pygame.time.wait(100)
+        else:
+            wait = pygame.time.wait(10)
     # Display the screen
     if(display):
         pygame.display.flip()
