@@ -211,6 +211,7 @@ while running:
 
         score = 0
         mySnake.reset()
+        fruit = (random.randint(0, 16), random.randint(0, 14))
         while mySnake.check_object_collision(fruit):
             fruit = (random.randint(0, 16), random.randint(0, 14))
 

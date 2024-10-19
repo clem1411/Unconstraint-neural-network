@@ -125,12 +125,18 @@ def ComputeForward(genome, inputs):
     for i in range(0, 16):
         for j in range(16, 48):
             outputs[j] += genome.genes[i][j-16][1] * inputs[i]
+    for h in range (16,48):
+        outputs[h] = math.tanh(outputs[h])
     for i in range(16, 48):
         for j in range(48, 80):
             outputs[j] += genome.genes[i][j-48][1] * outputs[i]
+    for h in range (48,80):
+        outputs[h] = math.tanh(outputs[h])
     for i in range(48, 80):
         for j in range(80, 85):
             outputs[j] += genome.genes[i][j-80][1] * outputs[i]
+    for h in range (80,85):
+        outputs[h] = math.tanh(outputs[h])
     return {k: outputs[k] for k in range(80, 85)}
 
 def crossMute(genomes,numGeneration):
