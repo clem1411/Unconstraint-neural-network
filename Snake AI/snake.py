@@ -5,25 +5,6 @@ from GeneticAI import AIController
 from GeneticAI import AITrainedControler
 
 
-mode_input = input("Choose the mode (1: Human, 2: AI Training, 3: AI Trained): ").strip()
-
-# Initialize the game
-pygame.init()
-
-# Set up the display
-screen = pygame.display.set_mode((850, 750))
-
-# Set up the colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-LIGHT_GREEN = (0, 255, 0)
-GREEN = (0, 200, 0)
-GRAY = (128, 128, 128)
-RED = (255, 0, 0)
-
-# Set up the game loop
-running = True
-
 class Snake:
     direction = "right"
     body = [(4, 8), (3, 8), (2, 8)]
@@ -115,16 +96,11 @@ class HumanController(Controller):
         return None
     
 
-    
-mySnake = Snake()
 
-fruit = (random.randint(0, 16), random.randint(0, 14))
-while mySnake.check_object_collision(fruit):
-    fruit = (random.randint(0, 16), random.randint(0, 14))
-screen.fill(GREEN)
-
+mode_input = input("Choose the mode (1: Human, 2: AI Training, 3: AI Trained): ").strip()
 population = 100
 display = True
+
 
 if mode_input == '1':
     controller = HumanController()
@@ -146,9 +122,37 @@ else:
     controller = HumanController()
     training = False
 
+# Initialize the game
+pygame.init()
+
+# Set up the display
+screen = pygame.display.set_mode((850, 750))
+
+# Set up the colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+LIGHT_GREEN = (0, 255, 0)
+GREEN = (0, 200, 0)
+GRAY = (128, 128, 128)
+RED = (255, 0, 0)
+
+# Set up the game loop
+running = True
+    
+mySnake = Snake()
+
+fruit = (random.randint(0, 16), random.randint(0, 14))
+while mySnake.check_object_collision(fruit):
+    fruit = (random.randint(0, 16), random.randint(0, 14))
+screen.fill(GREEN)
+
+
+
 score = 0
 numGenome = 0
-limit = 300
+limit = 1000
+if training:
+    limit = 50
 nbStep = 0
 nbStepTotal = 0
 nbGeneration = 0
@@ -200,10 +204,11 @@ while running:
             screen.blit(text, text_rect)
 
         if(training):
-            controller.setFitness(numGenome,50*score*((score//30)+1)-nbStepTotal)
+            controller.setFitness(numGenome,score)
             nbStepTotal = 0
             numGenome += 1
             numGenome = numGenome % population
+            limit = 50
             if numGenome == 0:
                 nbGeneration += 1
                 print("New Generation" + str(nbGeneration))
@@ -223,6 +228,8 @@ while running:
     if mySnake.check_fruit(fruit):
         mySnake.grow()
         score += 1
+        if training:
+            limit += 3
         nbStep = 0
         while mySnake.check_object_collision(fruit):
             fruit = (random.randint(0, 16), random.randint(0, 14))
