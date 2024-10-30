@@ -152,7 +152,7 @@ score = 0
 numGenome = 0
 limit = 1000
 if training:
-    limit = 50
+    limit = 100
 nbStep = 0
 nbStepTotal = 0
 nbGeneration = 0
@@ -208,7 +208,7 @@ while running:
             nbStepTotal = 0
             numGenome += 1
             numGenome = numGenome % population
-            limit = 50
+            limit = 100
             if numGenome == 0:
                 nbGeneration += 1
                 print("New Generation" + str(nbGeneration))
